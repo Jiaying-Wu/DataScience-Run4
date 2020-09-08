@@ -1,0 +1,256 @@
+---
+title: "Run 4 Course 1 Week 2 Office Hour"
+author: "Jiaying Wu"
+date: "08/09/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.width = 5,
+                      fig.height = 4,
+                      fig.align = "center")
+```
+
+```{r library}
+library(tidyverse)
+```
+
+```{r load_data}
+# load data and filter the aus without missing value in age group
+tb <- read_rds(here::here("data", "tb_tidy.rds"))
+tb_au <- filter(tb, country == "Australia", !is.na(age_group))
+tb_au
+```
+
+```{r blank_plot}
+# blank plot
+p1 <- ggplot(tb_au, aes(x = year, y = count, fill = sex))
+p1
+```
+
+## Bar chart
+
+### 100% Bar Chart
+
+```{r 100_bar_chart}
+# 100% bar chart
+p2 <- p1 + geom_bar(stat = "identity", position = "fill")
+p2
+```
+
+```{r change_color}
+# change color which friendly for colour blindness
+p3 <- p2 + scale_fill_brewer(palette = "Dark2")
+p3
+```
+
+```{r facet_plot, fig.width= 24, fig.height=4}
+p4 <- p3 + facet_grid(.~age_group) 
+p4
+```
+
+### Stack bar chart
+
+```{r stack_bar, fig.width= 20, fig.height=4}
+stack_bar <- ggplot(tb_au, aes(x = year, y = count, fill = sex)) +
+  geom_bar(stat = "identity", position = "stack") +
+  facet_grid(~ age_group) +
+  scale_fill_brewer(palette="Dark2")
+
+stack_bar
+```
+
+### Side by side bar chart (dodge)
+
+```{r sbs_bar, fig.width= 24, fig.height=4}
+sbs_bar <- ggplot(tb_au, aes(x = year, y = count, fill = sex)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_grid(~ age_group) +
+  scale_fill_brewer(palette="Dark2")
+
+sbs_bar
+```
+
+### Separated bar chart
+
+```{r sep_bar, fig.width= 24, fig.height=8}
+sep_bar <- ggplot(tb_au, aes(x = year, y = count, fill = sex)) +
+  geom_bar(stat = "identity") +
+  facet_grid(sex ~ age_group) +
+  scale_fill_brewer(palette="Dark2")
+
+sep_bar
+```
+
+
+## Rainbow, rose and pie charts
+
+### Rainbow chart
+
+```{r rainbow, fig.width= 18, fig.height=6}
+rainbow <- ggplot(tb_au, aes(x = 1, y = count, fill = factor(year))) +
+  geom_bar(stat = "identity", position="fill") +
+  facet_grid(sex ~ age_group) 
+
+rainbow
+```
+
+### Rose chart
+
+```{r rose, fig.width= 18, fig.height=6}
+rose <- ggplot(tb_au, aes(x = year, y = count, fill = sex)) +
+  geom_bar(stat = "identity") +
+  facet_grid(sex ~ age_group) +
+  scale_fill_brewer(palette="Dark2") + 
+  # change to rose chart
+  coord_polar() 
+rose
+```
+
+### Rainbow pie chart
+
+```{r rainbow_pie, fig.width= 18, fig.height=6}
+rainbow_pie <- rainbow +
+  # change to pie chart
+  coord_polar(theta = "y")
+
+rainbow_pie
+```
+
+
+## Tidy data
+
+### What is tidy data?
+
+- Each variable is in a column.
+
+- Each observation is a row.
+
+- Each value is a cell.
+
+### gather function
+
+```{r tb_smaller}
+tb_smaller <- tibble(year = c(2016, 2017, 2018),
+                     male = c(10, 20, 30),
+                     female = c(5, 15, 12))
+tb_smaller
+```
+
+```{r tb_smaller_long}
+tb_smaller_long <- gather(tb_smaller, 
+                          # key is the value in the column names
+                          key = "sex", 
+                          # value is the value in the cell
+                          value = "count",
+                          # the variable take into account in the tb_smaller data
+                          male, female)
+tb_smaller_long
+```
+
+### tidy format
+
+```{r tidy_data}
+tb
+```
+
+### messey format
+
+```{r messy_data}
+tb_messy <- read_csv("data/TB_notifications.csv")
+tb_messy
+```
+
+### Convert data in from widder format to longer format
+
+```{r convert_long}
+tb_long <- gather(tb_messy, key = "sex_agegroup", value = "count", -country, -year, -iso3)
+tb_long
+```
+
+### Separate “sex_agegroup”
+
+```{r separate_data}
+tb_long2 <- separate(tb_long, 
+                     col = "sex_agegroup", 
+                     into = c("type", "sex_agegroup"),
+                     # split at the underscore that is followed by the characters “m” or “f”
+                     sep = "_(?=[mf])"
+)
+tb_long2
+```
+
+### Extract the “age_group”
+
+```{r extract_data}
+tb_long3 <- extract(tb_long2, 
+                    col = "sex_agegroup", 
+                    into = c("sex", "age_group"),
+                    # the first says match characters “m” or “f”
+                    # the second says match anything that comes after.
+                    regex = "([mf])(.*)")
+tb_long3
+```
+
+
+## Wrangling data
+
+wrangling verbs:
+
+- filter (To pick cases/rows)
+
+- select (Select columns, and ignores all others)
+
+- mutate (Add columns)
+
+- summarise (Calculate a summary)
+
+- group_by (Group data)
+
+- arrange (Sort rows)
+
+### Filter data
+
+```{r raw_data}
+tb_long
+```
+
+```{r tb_au}
+# filter country equal to Australia
+tb_au <- filter(tb_long, country == "Australia")
+tb_au
+```
+
+
+
+```{r count_10}
+# filter count larger than 10
+filter(tb_long, count >= 10)
+```
+
+```{r filter_in_iso3}
+filter(tb_long, iso3 %in% c("AUS", "NZL", "IDN"))
+
+```
+
+```{r filter_missing}
+filter(tb_long, !is.na(count))
+```
+
+```{r filter_and}
+# filter base on two condition
+filter(tb_long, !is.na(count) & country == "India")
+```
+
+```{r filter_and_2}
+# Another way to filter base on two condition
+filter(tb_long, !is.na(count), country == "India")
+```
+
+```{r}
+# fiter union of data not missing in count or country equal to India
+filter(tb_long, !is.na(count) | country == "India")
+```

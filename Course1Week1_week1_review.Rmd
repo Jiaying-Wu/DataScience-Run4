@@ -1,0 +1,55 @@
+---
+title: "Course 1 Week2 Officer Hour - Week 1 Review"
+author: "Jiaying Wu"
+date: "08/09/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+
+# Title 1
+
+## title 2
+
+
+### title 3
+
+
+- Item A
+     - Item a
+     - Item aa
+- Item B
+
+[RStudio cheatsheets](https://www.rstudio.com/resources/cheatsheets/)
+
+![Image of postcard of Melbourne](https://ugc.futurelearn.com/uploads/assets/2a/22/2a22717f-0a39-49ad-8438-f5ceea0e3c18.jpg)
+
+Note: LaTeX has no built-in capacity to display files hosted on the web, hence, Rmarkdown couldn't knit the pdf file with web image. The best workaround for this is to download the web image to your local directory, and then specify this as a file path. Or knit to word document.
+
+
+```{r load_data}
+library(tidyverse)
+data_url <- "https://raw.githubusercontent.com/fivethirtyeight/data/master/avengers/avengers.csv"
+avengers <- read_csv(data_url)
+avengers
+``` 
+
+```{r summary}
+summary(avengers)
+```
+
+```{r factor}
+avengers$URL <- as.factor(avengers$URL)
+summary(avengers)
+```
+
+```{r plot}
+ggplot(data= avengers, aes(x = Gender, y = Appearances)) +
+  geom_boxplot() +
+  xlab("Something")
+```
