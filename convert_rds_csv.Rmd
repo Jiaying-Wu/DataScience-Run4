@@ -1,0 +1,18 @@
+---
+title: "Convert rds to csv"
+author: "Jiaying Wu"
+date: "12/09/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+tb <- read_rds("data/tb_tidy.rds")
+```
