@@ -13,12 +13,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Course material for Data Science: Data-Driven Decision Making
+# Extra material for Data Science: Data-Driven Decision Making
 
-- `Course`: Folder of course code and exercise code.
+### Course 1: Data Wrangling and Workflow
 
-- `Office_hour`: Folder of material for office hour.
-
-- `Extra`: Folder of extra course code.
-
-- `data`: Folder of course data.
+- `convert_rds_csv.Rmd`: R code to convert rds file to csv file

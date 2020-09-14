@@ -14,5 +14,9 @@ library(tidyverse)
 ```
 
 ```{r}
-tb <- read_rds("data/tb_tidy.rds")
+tb <- read_rds("../data/tb_tidy.rds")
+```
+
+```{r eval=FALSE}
+write_csv("../data/tb_tidy.csv")
 ```
