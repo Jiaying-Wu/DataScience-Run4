@@ -9,8 +9,9 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-                      fig.width = 5,
-                      fig.height = 4,
+                      message = FALSE,
+                      fig.width = 4,
+                      fig.height = 3,
                       fig.align = "center")
 ```
 
@@ -164,12 +165,20 @@ tb_messy <- read_csv("data/TB_notifications.csv")
 tb_messy
 ```
 
-### Convert data in from widder format to longer format
+### Convert data in from wide format to long format
 
 ```{r convert_long}
 tb_long <- gather(tb_messy, key = "sex_agegroup", value = "count", -country, -year, -iso3)
 tb_long
 ```
+
+### Convert data in from long format to wide format
+
+```{r spread}
+tb_wide <- spread(tb_long, key = "sex_agegroup", value = "count")
+tb_wide
+```
+
 
 ### Separate “sex_agegroup”
 
