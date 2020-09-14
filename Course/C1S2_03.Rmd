@@ -2,7 +2,9 @@
 title: "Course 1 Section 2.3 - Save Object"
 author: "Jiaying Wu"
 date: "14/09/2020"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
