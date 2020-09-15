@@ -1,5 +1,5 @@
 ---
-title: 'Section 2.20 Summarise: compute summaries'
+title: 'Course 1 Section 2.20 Summarise: compute summaries'
 author: "Jiaying Wu"
 date: "14/09/2020"
 output:

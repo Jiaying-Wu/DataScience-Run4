@@ -17,3 +17,7 @@ Course material for Data Science: Data-Driven Decision Making
 -   `C1S2_19.Rmd`: R mardown for Exercise in Course 1 Section 2.19
 
 -   `C1S2_20.Rmd`: R mardown for Exercise in Course 1 Section 2.20
+
+-   `C1S2_22.Rmd`: R mardown for Exercise in Course 1 Section 2.22
+
+-   `C1S2_24.Rmd`: R mardown for Exercise in Course 1 Section 2.24
