@@ -180,6 +180,191 @@ ggplot(df, aes(x=x, y=y)) + geom_point() + coord_fixed(ratio=0.2)
 ggplot(df, aes(x=x, y=y)) + geom_point() + theme(aspect.ratio=1)
 ```
 
+
+### Step 3.6: Colour
+
+#### Choropleth map
+
+Notice the sequence of pipes (%>%) used to wrangle the data. The data was filtered with the filter verb, grouped by country and year with the group_by verb, a sum of counts of TB cases by these groups with the summarise verb, reshaped into a wide form with the spread verb, then a variable created with mutate.
+
+```{r}
+tb <- read_rds(here::here("data", "tb_tidy.rds"))
+
+tb_inc <- tb %>% 
+  filter(year %in% c(2002, 2012)) %>%
+  group_by(country, year) %>%
+  summarise(count = sum(count, na.rm=TRUE)) %>%
+  spread(year, count) %>%
+  mutate(reldif = ifelse(`2002` == 0, 0, (`2012`-`2002`)/(`2002`))) %>%
+  ungroup()
+
+tb_inc
+```
+
+To draw the map, you will need to combine this data with the coordinates of each country. You will learn more about doing this in the next course, but for this exercise, follow along with the code in this step.
+
+```{r}
+# Join with a world map  
+library(maps)
+library(ggthemes)
+world_map <- map_data("world")
+# Names of countries need to be the same in both data tables
+tb_inc <- tb_inc %>% 
+  mutate(country=recode(country, 
+                       "United States of America"="USA", 
+                       "United Kingdom of Great Britain and Northern Ireland"="UK",
+                       "Russian Federation"="Russia"))
+tb_map <- left_join(world_map, tb_inc, by=c("region"="country"))
+head(tb_map)
+```
+
+#### Sequential
+
+```{r fig.width=7, fig.height=4}
+ggplot(tb_map) + 
+  geom_polygon(aes(x=long, y=lat, group=group, fill=reldif)) +
+      theme_map() 
+```
+
+Then, modify the colour palette using the viridis palette, which is perceptually uniform.
+
+```{r fig.width=7, fig.height=4}
+library(viridis)
+ggplot(tb_map) + 
+  geom_polygon(aes(x=long, y=lat, group=group, fill=reldif)) +
+      theme_map() +
+    scale_fill_viridis(na.value = "white")
+```
+
+#### Diverging
+
+```{r fig.width=7, fig.height=4}
+ggplot(tb_map) + 
+  geom_polygon(aes(x=long, y=lat, group=group, fill=reldif)) +
+      theme_map() +
+    scale_fill_distiller(palette="PRGn", na.value = "white", 
+                         limits = c(-7, 7))  
+```
+
+#### Qualitative
+
+```{r fig.width=7, fig.height=4}
+# Download data of countries and their continent (originally found in https://datahub.io/JohnSnowLabs/country-and-continent-codes-list)
+country_continent <- read_csv("https://raw.githubusercontent.com/datascienceprogram/ids_course_data/master/country_continent.csv")
+
+# Data pre-processing
+country_continent <- country_continent %>% 
+  select(Continent_Name, Country_Name)
+countryName <- country_continent$Country_Name
+country_continent$Country_Name <- gsub("\\,.*", "", countryName) # Remove characters after ,
+country_continent <- country_continent %>% 
+  # Rename countries for consistency
+  mutate(country = recode(Country_Name, 
+                       "United States of America"="USA", 
+                       "United Kingdom of Great Britain and Northern Ireland"="UK",
+                       "Russian Federation"="Russia"))
+
+# Map of countries highlighted by continent
+tb_map %>%
+  left_join(country_continent, by=c("region"="country")) %>%
+  ggplot() +
+  geom_polygon(aes(x=long, y=lat, group=group, fill=Continent_Name)) +
+      theme_map() +
+  scale_fill_brewer(palette="Dark2", na.value="white")
+```
+
+#### Colour blindness
+
+```{r}
+library(scales)
+df <- data.frame(x=runif(100), y=runif(100), cl=sample(c(rep("A", 50), rep("B", 50))))
+p <- ggplot(data=df, aes(x, y, colour=cl)) + theme_bw() + 
+  geom_point() + theme(legend.position = "none", aspect.ratio=1)
+
+library(dichromat)
+clrs <- hue_pal()(3)
+p 
+```
+
+```{r}
+clrs <- dichromat(hue_pal()(3))
+p + scale_colour_manual("", values=clrs) 
+```
+
+### Step 3.7 - The psychology of data visualisation
+
+Consider the plot that was generated with the following code chunk. Can you identify the odd data point out?
+
+```{r}
+df <- data.frame(x=runif(100), y=runif(100), cl=sample(c(rep("A", 1), rep("B", 99))))
+ggplot(data=df, aes(x, y, shape=cl)) + theme_bw() + 
+  geom_point() +
+  theme(legend.position="None", aspect.ratio=1)
+```
+
+Now, consider an updated plot generated from the code chunk below. Is it now easier to identify the odd data point?
+
+```{r}
+ggplot(data=df, aes(x, y, colour=cl)) + 
+  geom_point() +
+  theme_bw() + 
+  theme(legend.position="None", aspect.ratio=1) +
+  scale_colour_brewer(palette="Set1")
+```
+
+Let’s use the tuberculosis (TB) data to further explore the psychology of visualisation.
+
+```{r}
+# Read tb_tidy.rds
+tb <- read_rds(here::here("data", "tb_tidy.rds"))
+
+# Data pre-processing
+tb_au <- filter(tb, country == "Australia")  %>%
+  rename(age = age_group) %>%
+  filter(!(age %in% c("04", "014", "514", "u"))) %>%
+  filter(year > 1996, year < 2013)
+```
+
+To answer the question “Is the incidence similar for males and females in 2012 across age groups?” the following arrangement is better.
+
+```{r fig.width= 10, fig.height=3}
+tb_au %>% filter(year == 2012) %>%
+  ggplot(aes(x = sex, y = count, fill = sex)) +
+  geom_bar(stat = "identity", position="dodge") +
+  facet_grid( ~ age) +
+  scale_fill_brewer(palette="Dark2")
+```
+
+If you wanted to answer the question “Is the incidence similar for age groups in 2012, across sex?”
+
+```{r fig.width= 6, fig.height=3}
+tb_au %>% filter(year == 2012) %>%
+  ggplot(aes(x = age, y = count, fill = age)) +
+  geom_bar(stat = "identity", position="dodge") +
+  facet_grid( ~ sex) +
+  scale_fill_brewer(palette="Dark2")
+```
+
+### Step 3.11: Reading and writing proprietary formats
+
+```{r}
+library(readxl)
+path <- "../data/tas_rentals"
+xlsx_files <- list.files(path)
+xlsx_files
+```
+
+```{r}
+rentals <- read_xlsx(str_c(path,"/", xlsx_files[1]))
+rentals
+```
+
+```{r}
+rentals <- map_dfr(str_c(path, "/", xlsx_files), read_xlsx)
+rentals 
+```
+
+
 ### Step 3.12: Web Scraping
 
 ```{r}
@@ -197,4 +382,78 @@ tables <- html_table(raw_html, fill = TRUE)
 ausw_t20 <- tables[[3]]
 glimpse(ausw_t20)
 ```
+
+- all the columns of the T20 data are character variables (except for the Mat column). Why?
+
+- the table uses “*” to indicate ‘not out’, and “-” to indicate missing information.
+
+
+### Step 3.13 Reading and writing JSON files
+
+Step 1: Get a plan from
+
+Get a free plan from https://openexchangerates.org/signup/free by entering your details.
+
+Step 2: Find your API key
+Find your application programming interface (API) key. You can find that by going to https://openexchangerates.org/account/app-ids and then copying the key to your clipboard.
+
+Step 3: Tell R your API key
+
+Tell R your API key by running the following code:
+
+```{r}
+Sys.setenv("OER_KEY" = "your-key-here")
+```
+
+#### Access the data for cross rates
+
+```{r}
+library(jsonlite)
+makeRequest <- function(day)  {
+  req <- str_glue(
+    "https://openexchangerates.org/api/historical/{day}.json?app_id={key}",
+    day = day, key = Sys.getenv("OER_KEY")
+  ) 
+}
+res <- fromJSON(makeRequest("2019-08-15"))
+glimpse(res)
+```
+
+You can convert the rates element of the list into a tidy data frame by copying and then running the following code chunk.
+
+```{r}
+rates <- as_tibble(res$rates) %>% 
+  mutate(date = as.POSIXct(res$timestamp, origin = "1970-01-01")) %>% 
+  gather(key = "currency", value = "value", -date)
+rates
+
+```
+
+You can scale-up this process using a function to do all of the harvesting and tidying per day. To do this, copy and then run the following code chunk:
+
+```{r}
+getDay <- function(day) {
+  url <- makeRequest(day)
+  res <- fromJSON(url)
+  rates <- as_tibble(res$rates)  
+  rates <- mutate(rates, 
+                  date = as.POSIXct(res$timestamp, origin = "1970-01-01")) 
+  rates <- gather(rates, key = "currency", value = "value", -date)
+  rates
+}
+rates <- getDay("2019-08-15")
+rates
+```
+
+Finally, copy and run the following code chunk to generate the exchange rates for the month of August in the year 2018 as a tidy data frame.
+
+```{r}
+library(lubridate)
+# create a vector of all days in August 2018
+august <- seq(as_date("2018-08-01"), as_date("2018-08-31"), by = 1)
+aug_rates <- map_dfr(august, getDay)
+
+aug_rates
+```
+
 
