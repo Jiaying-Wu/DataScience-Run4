@@ -1,0 +1,200 @@
+---
+title: "Run 4 Course 1 Week 3 Office Hour"
+author: "Jiaying Wu"
+date: "18/09/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      fig.width = 4,
+                      fig.height = 3,
+                      fig.align = "center")
+```
+
+```{r library}
+library(tidyverse)
+```
+
+### Step 3.4: Aesthetics
+
+#### Make a start with the graduate programs dataset
+
+```{r}
+grad_programs <- read_csv("https://raw.githubusercontent.com/datascienceprogram/ids_course_data/master/graduate-programs.csv")
+grad_programs
+```
+
+#### Create a scatter plot
+
+```{r}
+ggplot(data = grad_programs, 
+       aes(x = NumStud, y = MedianTimetoDegree)) +
+  geom_point()
+```
+
+#### Use some colour!
+
+```{r}
+ggplot(data = grad_programs, 
+       aes(x = NumStud, 
+           y = MedianTimetoDegree, 
+           colour  = subject)) +
+  geom_point()
+```
+
+#### Read and review
+
+```{r}
+glimpse(grad_programs)
+```
+
+#### Different types of variables
+
+```{r}
+ggplot(grad_programs, aes(x = subject)) +
+  geom_bar()
+```
+
+#### The challenge of distinguishing differences
+
+```{r}
+# plot the number of programs each institution has
+# a big mess
+ggplot(grad_programs, aes(x = Inst)) +
+  geom_bar()
+```
+
+#### Arrange the data differently
+
+```{r}
+counts <- count(grad_programs, Inst, sort = TRUE)
+counts <- filter(counts, n >= 5)
+counts <- mutate(counts, Inst = fct_reorder(Inst, n))
+counts
+```
+
+#### Increase readability
+
+```{r}
+ggplot(counts, aes(x = Inst, y = n)) +
+  geom_bar(stat = "identity") +
+  coord_flip()
+```
+
+#### Use a scatter plot to show two quantitative variables at once
+
+```{r}
+ggplot(grad_programs, aes(x = NumStud, y = TotFac)) +
+  geom_point() +
+  labs(x = "Number of Students", y = "Number of Faculty")
+```
+
+#### Use a box plot or jitter plot to show a quantitative variable
+
+```{r}
+ggplot(grad_programs, 
+       aes(x = subject, y = PctFemaleStud)) +
+  geom_boxplot(outlier.alpha = 0) +
+  geom_jitter(alpha = 0.1) +
+  labs(y = "Percent Female Students")
+```
+
+#### Use a histogram to show a single quantitative variable
+
+```{r}
+ggplot(grad_programs, aes(x = AvGREs)) +
+  geom_histogram()
+```
+
+#### Read and review
+
+Consider the following examples of layering using simulated data. Data from the two sets of numerical variables, y1 and y2, are plotted against numerical variable x on separate graphs. Each graph is layered differently, some with points, some with a smooth line, some with a confidence interval, some with all 3, etc.
+
+```{r}
+# Set seed so simulated data does not change 
+set.seed(12345)
+
+# Simulated data
+df <- tibble(x=runif(100), y1=4*x + rnorm(100), 
+             y2= -x + 10*(x-0.5)^2+ rnorm(100))
+
+# Data plotted with different layers
+p1 <- ggplot(df, aes(x=x, y=y1)) + 
+  geom_point() +
+  labs(title = "p1")
+
+p2 <- ggplot(df, aes(x=x, y=y1)) + 
+  geom_point() + 
+  geom_smooth(method="lm", se=FALSE) +
+  labs(title = "p2")
+
+p3 <- ggplot(df, aes(x=x, y=y1)) + 
+  geom_point() + 
+  geom_smooth(method="lm") +
+  labs(title = "p3")
+
+p4 <- ggplot(df, aes(x=x, y=y2)) + 
+  geom_point() +
+  labs(title = "p4")
+
+p5 <- ggplot(df, aes(x=x, y=y2)) + 
+  geom_point() + 
+  geom_smooth(method="lm", se=FALSE) +
+  labs(title = "p5")
+
+p6 <- ggplot(df, aes(x=x, y=y2)) + 
+  geom_point() + 
+  geom_smooth(se=FALSE) +
+  labs(title = "p6")
+
+p7 <- ggplot(df, aes(x=x, y=y2)) + 
+  geom_point() + 
+  geom_smooth(se=FALSE, span=0.05) +
+  labs(title = "p7")
+
+p8 <- ggplot(df, aes(x=x, y=y2)) + 
+  geom_point() + 
+  geom_smooth(se=FALSE, span=0.2) +
+  labs(title = "p8")
+```
+
+#### Coordinate systems
+
+```{r}
+# Simulated data
+df <- tibble(x=runif(100), y=runif(100)*10)
+ggplot(df, aes(x=x, y=y)) + geom_point() + coord_fixed()
+```
+
+```{r}
+ggplot(df, aes(x=x, y=y)) + geom_point() + coord_equal()
+```
+
+```{r}
+ggplot(df, aes(x=x, y=y)) + geom_point() + coord_fixed(ratio=0.2)
+```
+
+```{r}
+ggplot(df, aes(x=x, y=y)) + geom_point() + theme(aspect.ratio=1)
+```
+
+### Step 3.12: Web Scraping
+
+```{r}
+library(rvest)
+site <- "http://stats.espncricinfo.com/ci/engine/stats/index.html?class=10;page=1;team=289;template=results;type=batting;wrappertype=print"
+```
+
+```{r}
+raw_html <- read_html(site)
+raw_html
+```
+
+```{r}
+tables <- html_table(raw_html, fill = TRUE)
+ausw_t20 <- tables[[3]]
+glimpse(ausw_t20)
+```
+
