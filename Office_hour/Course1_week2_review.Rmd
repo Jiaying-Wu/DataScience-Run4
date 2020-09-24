@@ -19,6 +19,7 @@ knitr::opts_chunk$set(echo = TRUE,
 library(tidyverse)
 ```
 
+
 ```{r load_data}
 # load data and filter the aus without missing value in age group
 tb <- read_rds(here::here("data", "tb_tidy.rds"))

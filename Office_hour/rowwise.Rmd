@@ -1,0 +1,23 @@
+---
+title: "Rowwise function"
+author: "Jiaying Wu"
+date: "23/09/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE)
+```
+
+As the question you asked in the office hour, in order to caculate the row sum of some columns in a data frame, you can use the "rowwise()" function to compute on a data frame a row-at-a-time. 
+
+```{r}
+library(tidyverse)
+df <- tibble(a = 1:3, b = 2:4, c = 3:5, d = 4:6)
+df %>% 
+  rowwise() %>%
+  mutate(sum_abc = sum(a, b, c))
+```
+
+Reference for the "rowwise()" function: https://dplyr.tidyverse.org/reference/rowwise.html

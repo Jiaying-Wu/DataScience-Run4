@@ -1,0 +1,133 @@
+---
+title: '"Run 4 Course 1 Week 4 Office Hour'
+author: "Jiaying Wu"
+date: "22/09/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      fig.width = 4,
+                      fig.height = 3,
+                      fig.align = "center")
+```
+
+### Step 4.3: Communicating the message
+
+```{r}
+# path to the data
+path <- "../data/meter_01.csv"
+```
+
+```{r library}
+library(tidyverse)
+library(lubridate)
+library(sugrrants)
+library(tsibble)
+library(glue)
+```
+
+```{r}
+elec <- read_csv(path, skip=1,
+                 col_names = c("id", "date",  1:48),
+                 col_types =str_c("cc", str_c(rep("d", 48), collapse = ""), str_c(rep("-", 5), collapse = ""))
+)
+elec %>% select(id:`5`) %>% head(3)
+```
+
+```{r}
+vic_holidays <- holiday_aus(2017:2019, state = "VIC")
+
+elec <- elec %>% filter(id == 300)
+
+elec <- elec %>%
+  mutate(date = ymd(date)) %>%
+  gather(halfhour, kwh, -id, -date) %>%
+  mutate(halfhour = as.numeric(halfhour) / 2) %>%
+  arrange(date, halfhour) %>%
+  mutate(
+    wday = wday(date, label = TRUE, abbr = TRUE, week_start = 1),
+    month = month(date, label = TRUE, abbr = TRUE),
+    year = year(date),
+    dt = ymd_hm(glue("{date} 12:00"), tz = "Australia/Melbourne") + minutes(60*halfhour)
+  ) %>% 
+  mutate(work = ifelse(wday %in% c("Mon", "Tue", "Wed", "Thu", "Fri"), "workday", "holiday")) %>%
+  mutate(work = ifelse(date %in% vic_holidays$date, "holiday", work))
+
+elec %>% head(3)
+```
+
+#### lot (some of) the data in a calendar layout
+
+```{r fig.width=14, fig.height=8}
+p1 <- elec %>%
+  filter(date < dmy("01022019"), date >= dmy("01122018")) %>%
+  ggplot(aes(x = halfhour, y = kwh)) +
+  geom_line(aes(colour = work)) +
+  scale_colour_brewer("work", palette = "Dark2") +
+  facet_calendar(~ date) +
+  xlim(c(0,24)) +
+  theme(legend.position="none")
+
+p1
+```
+
+#### Combine with weather data
+
+```{r}
+library(bomrang)
+library(viridis)
+stations <- sweep_for_stations(latlon = c(-37.8136, 144.9631)) #Melbourne lat/long is 
+maxtemp <- get_historical(stationid = "086282", type = "max") 
+maxtemp <- maxtemp %>%  
+  mutate(date = paste(maxtemp$year, maxtemp$month, maxtemp$day, sep="-")) %>%
+  mutate(date = ymd(date))
+maxtemp_df <- maxtemp %>% filter(year > 2017, month %in% c(12, 1)) 
+elec <- elec %>%   
+  left_join(maxtemp_df, by="date") 
+```
+
+```{r}
+p1 <- elec %>%
+  filter(date < dmy("01022019"), date >= dmy("01122018")) %>%
+  frame_calendar(x = halfhour, y = kwh, date = date, ncol = 4) %>%
+  ggplot(aes(x = .halfhour, y = .kwh, group = date, colour=max_temperature)) +
+  geom_line() +
+  scale_colour_viridis_c("temperature", option="inferno", direction=-1) +
+  theme(legend.position = "bottom")
+
+prettify(p1)
+```
+
+#### Make a simple plot
+
+```{r}
+p <- elec %>%
+  filter(year(date) == 2018) %>%
+  group_by(date) %>%
+  summarise(kwh = sum(kwh)) %>%
+  left_join(maxtemp_df, by="date") %>%
+  ggplot(aes(x=max_temperature, y=kwh, text=date)) + geom_point()
+p
+```
+
+#### Compare day of the week
+
+```{r}
+p <- elec %>%
+  filter(year(date) == 2018) %>%
+  group_by(date) %>%
+  summarise(kwh = sum(kwh)) %>%
+  mutate(wday = wday(date, label = TRUE, week_start = 1)) %>%
+  ggplot(aes(x=wday, y=kwh)) + geom_boxplot()
+p
+```
+
+
+
+
+
+
+
+
