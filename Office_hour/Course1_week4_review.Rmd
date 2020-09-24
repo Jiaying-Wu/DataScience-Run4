@@ -2,7 +2,9 @@
 title: '"Run 4 Course 1 Week 4 Office Hour'
 author: "Jiaying Wu"
 date: "22/09/2020"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
