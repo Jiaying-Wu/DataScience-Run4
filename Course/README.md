@@ -52,6 +52,14 @@ Sample Answer Code for Data Science: Data-Driven Decision Making
 
 #### Week 2: TEMPORAL AND SPATIAL DATA
 
+-   `C2S2_05.Rmd`: Sample answer code for Course 2 Step 2.5: `WORKING WITH DATES AND TIMES`
+
+-   `C2S2_08.Rmd`: Sample answer code for Course 2 Step 2.8: `YOUR TURN`
+
+-   `C2S2_10.Rmd`: Sample answer code for Course 2 Step 2.10: `SPATIAL POINT DATA`
+
+-   `C2S2_13.Rmd`: Sample answer code for Course 2 Step 2.13: `YOUR TURN`
+
 #### Week 3: MODELLING
 
 #### Week 4: STATISTICAL AND COMPUTATIONAL MODELS
