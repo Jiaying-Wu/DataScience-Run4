@@ -83,3 +83,11 @@ Sample Answer Code for Data Science: Data-Driven Decision Making
 -   `C2S3_14.Rmd`: Sample answer code for Course 2 Step 3.14: `YOUR TURN`
 
 #### Week 4: STATISTICAL AND COMPUTATIONAL MODELS
+
+-   `C2S4_06.Rmd`: Sample answer code for Course 2 Step 4.6: `REGRESSION TREES`
+
+-   `C2S4_09.Rmd`: Sample answer code for Course 2 Step 4.9: `YOUR TURN`
+
+-   `C2S4_11.Rmd`: Sample answer code for Course 2 Step 4.11: `CLASSIFICATION TREES`
+
+-   `C2S4_13.Rmd`: Sample answer code for Course 2 Step 4.13: `YOUR TURN`
