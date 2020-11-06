@@ -100,6 +100,12 @@ Sample Answer Code for Data Science: Data-Driven Decision Making
 
 -   `C3S1_11.Rmd`: Sample answer code for Course 3 Step 1.11: `SENTIMENT ANALYSIS`
 
+-   `C3S1_13.Rmd`: Sample answer code for Course 3 Step 1.13: `YOUR TURN`
+
+-   `C3S1_15.Rmd`: Sample answer code for Course 3 Step 1.15: `NETWORK DATA`
+
+-   `C3S1_18.Rmd`: Sample answer code for Course 3 Step 1.18: `YOUR TURN`
+
 #### Week 2: BIG DATA
 
 #### Week 3: LIFE CYCLES AND DATA MANAGEMENT
