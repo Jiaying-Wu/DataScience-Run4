@@ -1,0 +1,84 @@
+---
+title: "Uber"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(tidyverse)
+library(lubridate)
+
+uber_path <- ("data_2014")
+uber_csv_files <- list.files(uber_path)
+
+uber_tidy <- map_dfr(str_c(uber_path, "/", uber_csv_files), read_csv) %>%
+  separate("Date/Time", c("date", "time"), sep = " ") %>%
+  mutate(date = mdy(date)) %>%
+  mutate(month = month(date), day = day(date), year = year(date)) %>%
+  mutate(time = hms(time)) %>%
+  mutate(hour = hour(time)) %>%
+  transform(MonthAbb = month.abb[month])
+
+uber_tidy <- uber_tidy %>%
+  mutate(wday = format(as.Date(uber_tidy$date), "%A", week_start=1))
+```
+
+Page 1
+==============
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### User input
+
+```{r}
+# range ui
+time_ui <- sliderInput(inputId = "range", 
+                       label = "Range of time in the day:", 
+                       min = 0, 
+                       max = 23, 
+                       value = c(0, 23))
+
+# base ui
+base_ui <- selectInput(inputId = "base", 
+                       label = "Choose a base to display", 
+                       choices = c("B02512","B02598", "B02617", "B02682", "B02764"),
+                       selected = "B02512")
+
+# ui
+fluidPage(title = "Choose the Base and time to plot the data.", time_ui, base_ui)
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Plot
+
+```{r}
+# reactive expression
+uber_sub <- reactive({
+  uber_tidy %>%
+    filter(!is.na(wday)) %>%
+    filter(between(hour, input$range[1], input$range[2])) %>%
+    filter(Base == input$base) %>%
+    group_by(hour, Base, wday) %>%
+    count(Base)
+})
+
+# render function
+renderPlot({
+  uber_sub() %>%
+    ggplot(aes(x = hour, y = n, colour = Base)) +
+    geom_line() +
+    facet_wrap(~wday) +
+    labs(title = "The number of Uber pickups during the day", y = "Number of pickups")
+})
+```
+
+
+
